@@ -27,14 +27,18 @@ enforce_protection() {
 
     PROTECTED_COMMANDS=("push" "undo" "hard")
 
-    if [ "$BRANCH" = "main" ] && [ "$MAIN_PROTECTION" = "1" ]; then
-        for BLOCKED in "${PROTECTED_COMMANDS[@]}"; do
-            if [ "$CMD" = "$BLOCKED" ]; then
-                echo -e "${RED}[ERROR] '$CMD' is blocked on main. Use 'ff disable main' to override.${NC}"
-                exit 1
-            fi
-        done
+    if [[ "$COMMAND" != "enable" && "$COMMAND" != "disable" ]]; then
+        if [ "$BRANCH" = "main" ] && [ "$MAIN_PROTECTION" = "1" ]; then
+            for CMD in "${PROTECTED_COMMANDS[@]}"; do
+                if [ "$COMMAND" = "$CMD" ]; then
+                    echo -e "${RED}[ERROR] '$COMMAND' is blocked on main. Use 'ff disable main' to override.${NC}"
+                    exit 1
+                fi
+            done
+        fi
     fi
+
+
 }
 
 safe_switch_check() {
@@ -55,16 +59,16 @@ fi
 
 case $COMMAND in
 
-    enable)
+    disable)
         if [ "$ARGUMENT" = "main" ]; then
             echo "MAIN_PROTECTION=0" > "$CONFIG_FILE"
-            echo -e "${GREEN}[INFO] Main protection DISABLED.${NC}"
+            echo -e "${RED}[INFO] Main protection DISABLED.${NC}"
         else
             echo -e "${RED}[ERROR] Unknown target: $ARGUMENT${NC}"
         fi
         ;;
 
-    disable)
+    enable)
         if [ "$ARGUMENT" = "main" ]; then
             echo "MAIN_PROTECTION=1" > "$CONFIG_FILE"
             echo -e "${GREEN}[INFO] Main protection ENABLED.${NC}"
