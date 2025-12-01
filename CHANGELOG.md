@@ -1,32 +1,47 @@
 # Changelog
 
-All notable changes to **FastFlow (ff)** will be documented in this file.
+All notable changes to `ff` will be documented in this file.
 
-This project follows **semantic versioning**.
+## [0.1.0] - 2025-12-01
 
----
-
-## [1.0.0] – 2025-12-01  
 ### Added
-- Initial stable release of FastFlow
-- Main branch protection system (`MAIN_PROTECTION`)
-- `ff enable main` and `ff disable main` commands
-- Safe push workflow (`ff push "<msg>"`)
-- Rebase-based pull (`ff pull`)
-- Soft reset undo (`ff undo`)
-- Hard reset with confirmation (`ff hard`)
-- Safe branch switching (`ff switch <branch>`)
-- Branch listing (`ff branch`)
-- Git info helpers (`ff status`, `ff log`, `ff reflog`)
-- Automatic config initialization (~/.ffconfig)
-- Helper functions: `enforce_protection`, `safe_switch_check`
-- Fully documented README
 
----
+- Initial `ff` script:
+  - `ff push <msg>` – auto `git add .`, commit, and `git push -u origin <branch>`.
+  - `ff pull` – `git pull --rebase origin <current-branch>`.
+  - `ff status` – `git status`.
+  - `ff log` – `git log --oneline`.
+  - `ff reflog` – `git reflog`.
+  - `ff branch` – `git branch`.
+  - `ff undo` – soft reset last commit (`git reset --soft HEAD~1`).
+  - `ff hard` – hard reset to previous commit (`git reset --hard HEAD~1`, with confirmation).
+  - `ff switch <branch>` – safe branch switching using `git switch`.
+  - `ff new <branch>` – create and switch to a new branch using `git switch -c`.
 
-## [Unreleased]
-### Planned  
-- `ff new <branch>` for creating and switching to a new branch  
-- Automatic stash before switching (optional flag)  
-- Interactive menu mode (`ff menu`)  
-- Expanded configuration options
+- Main branch protection (enabled by default via `~/.ffconfig`):
+  - `MAIN_PROTECTION=1` protects `main` from:
+    - `ff push`
+    - `ff undo`
+    - `ff hard`
+  - `ff enable main` / `ff disable main` to toggle.
+
+- Safety checks:
+  - Safe detection of current branch even before the first commit.
+  - Prevention of switching off `main` with uncommitted changes when protection is enabled.
+  - Guardrails around `undo`/`hard` requiring a previous commit to exist.
+
+
+## [1.1.0] - 2025-12-01
+
+### Added
+- `ff new <branch>` to create and switch to a new branch.
+- `ff switch <branch>` with safe switching checks.
+
+### Fixed
+- `ff push` now stages and commits correctly in fresh repos.
+- Safer detection of current branch and previous commits.
+
+## [1.0.0] - 2025-12-01
+
+### Known issues
+- Initial release with broken push behavior. Do not use.
