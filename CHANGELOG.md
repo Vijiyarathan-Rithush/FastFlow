@@ -2,7 +2,7 @@
 
 All notable changes to `ff` will be documented in this file.
 
-## Unreleased
+## [2.0.0] - 2026-11-21
 
 - Stage files with `git add` before calling `ff push`. FastFlow commits only the staged changes.
 - Load the protection setting as data and keep protection enabled for invalid settings.
