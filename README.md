@@ -1,246 +1,61 @@
-# FastFlow (ff)
+# FastFlow
 
-FastFlow (`ff`) is a lightweight Git workflow helper written in Bash.
+FastFlow (`ff`) is a Bash CLI for Git. It commits and pushes the files you stage,
+blocks history-changing commands on `main` by default, and adds shortcuts for
+rebasing, branch switching and inspecting history.
 
-It adds safety and speed to your daily Git commands by:
+## Install
 
-* protecting the `main` branch by default
-* providing a safe `ff push` flow (interactive staging + commit + push)
-* adding shortcuts for common Git actions
-* keeping everything simple, transparent, and under your control
-
-FastFlow is built for developers who work in the terminal and want a faster, safer Git flow.
-
----
-
-## **Features**
-
-* **Main branch protection**
-  Destructive actions (`push`, `undo`, `hard`) are blocked on `main` by default.
-  Can be explicitly overridden with:
-
-  ```bash
-  ff disable main
-  ```
-
-* **Safe push workflow**
-
-  ```bash
-  ff push "message"
-  ```
-
-  * Uses `git add -p` (interactive staging)
-  * Commits with your message
-  * Pushes to the current branch
-
-* **Protected history operations**
-
-  * `ff undo` → soft resets last commit
-  * `ff hard` → hard resets last commit (with confirmation)
-
-* **Safe branch switching**
-
-  ```bash
-  ff switch <branch>
-  ```
-
-  Prevents switching away from `main` if there are uncommitted changes while main protection is enabled.
-
-* **Simple config file**
-  Uses:
-
-  ```bash
-  ~/.ffconfig
-  ```
-
-  Created automatically on first run.
-
-* **Clean, readable Bash code**
-  Structured helpers (`enforce_protection`, `safe_switch_check`).
-
----
-
-## **Requirements**
-
-* Git
-* Bash (Linux, macOS, WSL, or Git Bash on Windows)
-
----
-
-## **Installation (manual)**
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/fastflow.git
-   cd fastflow
-   ```
-
-2. **Make the script executable**
-
-   ```bash
-   chmod +x ff
-   ```
-
-3. **Move it into your `$HOME/bin`**
-
-   ```bash
-   mkdir -p "$HOME/bin"
-   cp ff "$HOME/bin/ff"
-   ```
-
-4. **Add `$HOME/bin` to your PATH**
-   Add this to your `~/.bashrc`:
-
-   ```bash
-   export PATH="$HOME/bin:$PATH"
-   ```
-
-   Reload your shell:
-
-   ```bash
-   source ~/.bashrc
-   ```
-
-5. **Test**
-
-   ```bash
-   ff status
-   ```
-
----
-
-## **Usage**
-
-### Protect / unprotect `main`
+You need Bash and a Git version that supports `git switch`. On Windows, use Git
+Bash or WSL.
 
 ```bash
-ff enable main   # Enable protection (block destructive actions on main)
-ff disable main  # Disable protection (allow destructive actions on main)
+git clone https://github.com/Vijiyarathan-Rithush/FastFlow.git
+cd FastFlow
+bash setup.sh
+export PATH="$HOME/bin:$PATH"
+ff --help
 ```
 
-> By default, `MAIN_PROTECTION` is set to `1` (enabled) in `~/.ffconfig`.
+To prefer a manual install, copy `ff.sh` to `~/bin/ff` and make it executable.
 
----
-
-## **Safe push**
+## Quick start
 
 ```bash
-ff push "implement ticket API"
+ff new my-change
+git add path/to/changed-file
+ff push "Describe the change"
 ```
 
-This will:
+`ff push` commits only what is already staged. Run `git diff --cached` to review
+the staged patch first. The command pushes the current branch to `origin` and
+sets its upstream. If the push fails after the commit succeeds, the local commit
+remains available for a normal `git push`.
 
-1. Run `git add -p` (interactive staging)
-2. Create a commit with your message
-3. Push to the **current** branch
+| Command | Behaviour |
+| --- | --- |
+| `ff pull` | Pull the current branch from `origin` with rebase |
+| `ff status`, `ff log`, `ff reflog` | Inspect the repository |
+| `ff branch` | List local branches |
+| `ff switch <branch>`, `ff new <branch>` | Switch to or create a branch |
+| `ff undo` | Soft-reset one commit and retain its changes |
+| `ff hard` | Hard-reset one commit after confirmation |
+| `ff enable main`, `ff disable main` | Toggle protection for `main` |
 
-If there are no changes, it prints an info message.
+By default, FastFlow blocks `ff push`, `ff undo` and `ff hard` on `main`, and
+blocks branch switching from an unclean `main`. The setting is stored in
+`~/.ffconfig` as `MAIN_PROTECTION=1` or `MAIN_PROTECTION=0`.
+Set `FASTFLOW_CONFIG` to use a different config file.
 
----
-
-## **Pull with rebase**
+## Development
 
 ```bash
-ff pull
+bash tests/smoke.sh
 ```
 
-Uses:
+The smoke tests use a temporary local Git repository as the push destination.
 
-```bash
-git pull --rebase origin <current-branch>
-```
 
-Keeps history cleaner than merge-based pulls.
+## License
 
----
-
-## **History helpers**
-
-Soft undo:
-
-```bash
-ff undo
-```
-
-Hard reset:
-
-```bash
-ff hard
-```
-
----
-
-## **Branch helpers**
-
-List local branches:
-
-```bash
-ff branch
-```
-
-Switch safely:
-
-```bash
-ff switch <branch-name>
-```
-
-If you are on `main` with protection enabled and have uncommitted changes, FastFlow will refuse to switch.
-
----
-
-## **Info helpers**
-
-```bash
-ff status   # git status
-ff log      # git log
-ff reflog   # git reflog
-```
-
----
-
-## **Config**
-
-FastFlow uses a simple config file:
-
-```bash
-~/.ffconfig
-```
-
-Example content:
-
-```bash
-MAIN_PROTECTION=1
-```
-
-* `1` → protection enabled (default)
-* `0` → protection disabled (`ff enable main`)
-
-You normally don't need to edit this file manually.
-Use:
-
-```bash
-ff enable main
-ff disable main
-```
-
----
-
-## **License**
-
-MIT License.
-You are free to use, modify, and share this tool.
-
----
-
-## **Author**
-
-Vijiyarathan Rithush
-Backend-focused developer and Linux enjoyer.
-
----
-
-## **Contributions**
-
-This project started as a personal workflow tool.
-If you want to extend it or adapt it, feel free to fork and customize it.
+FastFlow is distributed under the MIT License.
