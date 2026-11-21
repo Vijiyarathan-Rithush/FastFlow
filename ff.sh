@@ -13,15 +13,15 @@ set -euo pipefail
 COMMAND="${1:-}"
 ARGUMENT="${2:-}"
 
-CONFIG_FILE="$HOME/.ffconfig"
-
-# Default: protect main
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "MAIN_PROTECTION=1" > "$CONFIG_FILE"
+CONFIG_FILE="${FASTFLOW_CONFIG:-$HOME/.ffconfig}"
+MAIN_PROTECTION=1
+if [[ -f "$CONFIG_FILE" ]]; then
+    case "$(cat -- "$CONFIG_FILE")" in
+        MAIN_PROTECTION=0) MAIN_PROTECTION=0 ;;
+        MAIN_PROTECTION=1) ;;
+        *) printf 'Ignoring invalid FastFlow configuration: %s\n' "$CONFIG_FILE" >&2 ;;
+    esac
 fi
-
-# shellcheck source=/dev/null
-source "$CONFIG_FILE"
 
 require_git_repo() {
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -62,9 +62,9 @@ enforce_protection() {
     local branch
     branch="$(current_branch)"
 
-    # If we cant determine branch (detached/unborn), do nothing
     if [[ -z "$branch" ]]; then
-        return 0
+        printf 'Switch to a branch before running ff %s.\n' "$subcmd" >&2
+        exit 1
     fi
 
     local PROTECTED_COMMANDS=("push" "undo" "hard")
@@ -100,9 +100,8 @@ safe_switch_check() {
     fi
 }
 
-if [[ -z "$COMMAND" ]]; then
-    echo -e "${RED}[ERROR] No command provided.${NC}"
-    exit 1
+if [[ -z "$COMMAND" || "$COMMAND" == "--help" || "$COMMAND" == "-h" ]]; then
+    COMMAND=help
 fi
 
 case "$COMMAND" in
@@ -129,12 +128,6 @@ case "$COMMAND" in
 
     push)
         enforce_protection "push"
-        require_git_repo
-
-        if [[ -z "$(git status --porcelain)" ]]; then
-            echo -e "${YELLOW}[INFO] No changes to commit.${NC}"
-            exit 0
-        fi
 
         if [[ -z "$ARGUMENT" ]]; then
             echo -e "${RED}[ERROR] Commit message required.${NC}"
@@ -148,11 +141,8 @@ case "$COMMAND" in
             exit 1
         fi
 
-        git add .
-
-        # If nothing is staged after add, dont even try to commit
         if git diff --cached --quiet; then
-            echo -e "${RED}[ERROR] Nothing staged to commit after git add .${NC}"
+            printf 'Stage the files you want to publish with git add before running ff push.\n' >&2
             exit 1
         fi
 
@@ -235,7 +225,7 @@ case "$COMMAND" in
         require_git_repo
         safe_switch_check
 
-        git switch "$ARGUMENT"
+        git switch -- "$ARGUMENT"
         echo -e "${YELLOW}[INFO] Switched to branch '$ARGUMENT'.${NC}"
         ;;
 
@@ -256,7 +246,7 @@ case "$COMMAND" in
         echo "Available commands:"
         echo "  ff enable main      -> ENABLE main protection"
         echo "  ff disable main     -> DISABLE main protection"
-        echo "  ff push <msg>       -> Add/commit/push changes"
+        echo "  ff push <msg>       -> Commit staged changes and push"
         echo "  ff pull             -> Pull changes (rebase)"
         echo "  ff status           -> Git status"
         echo "  ff log              -> Git log (oneline)"

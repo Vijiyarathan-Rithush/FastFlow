@@ -1,0 +1,17 @@
+name: FastFlow checks
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: |
+          for script in ff.sh setup.sh tests/smoke.sh; do
+            bash -n "$script"
+          done
+      - run: bash tests/smoke.sh

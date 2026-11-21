@@ -2,6 +2,13 @@
 
 All notable changes to `ff` will be documented in this file.
 
+## Unreleased
+
+- Stage files with `git add` before calling `ff push`. FastFlow commits only the staged changes.
+- Load the protection setting as data and keep protection enabled for invalid settings.
+- Reject history-changing operations while HEAD is detached.
+- Correct installation examples and add smoke tests in GitHub Actions.
+
 ## [0.1.0] - 2025-12-01
 
 ### Added
